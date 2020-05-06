@@ -4,6 +4,7 @@
 第二個整數為旋轉方向，1為順時鐘方向，2為逆時鐘方向。
 第三個整數為內折處，1為在第一個角內折，2為在第二個角內折。
 """
+import copy
 
 
 ########## Init ##########
@@ -20,7 +21,7 @@ nowPos = {
 
 ROW = xyLen
 COL = xyLen
-directionRoll = ["y+", "y+x+", "x+", "x+y-", "y-", "y-x-", "x-", "x-y+"]
+directionRoll = ["y-", "y-x+", "x+", "x+y+", "y+", "y+x-", "x-", "x-y-"]
 rotationCount = 0
 array2D = [["N" for _ in range(ROW)] for _ in range(COL)]
 # array2D same as...
@@ -46,7 +47,7 @@ def set_step(x, y):
     nowPos["y"] = y
     nowPos["count"] = nowPos["count"] + 1
     #write value
-    array2D[ nowPos["x"]-1 ][ nowPos["y"]-1 ] = nowPos["count"]
+    array2D[ nowPos["y"]-1 ][ nowPos["x"]-1 ] = nowPos["count"]
 
 
 def check_nextStep(direction):
@@ -61,7 +62,7 @@ def check_nextStep(direction):
     if pos["y"] not in range(1, COL+1):
         return False
     #check value have
-    if array2D[ pos["x"]-1 ][ pos["y"]-1 ] != "N":
+    if array2D[ pos["y"]-1 ][ pos["x"]-1 ] != "N":
         return False
     return True
 
@@ -78,16 +79,40 @@ def goToWall(direction):
             stepCount = stepCount + 1
 
 
-def check_end():
-    if check_nextStep("x+")==False and \
-    check_nextStep("x-")==False and \
-    check_nextStep("y+")==False and \
-    check_nextStep("y-")==False:
+def check_extraEvent():
+    global directionRoll
+    global array2D
+    global nowPos
+    air_count = 0
+    value_count = 0
+    print(nowPos)
+    for direction in directionRoll:
+        pos = get_nextStep(direction)
+        print(pos)
+        #check not in domain
+        if pos["x"] not in range(1, ROW+1):
+            return False
+        if pos["y"] not in range(1, COL+1):
+            return False
+        #check value count
+        if array2D[ pos["y"]-1 ][ pos["x"]-1 ] == "N":
+            air_count = air_count + 1
+            print('air_count = ' + str(air_count))
+        else:
+            value_count = value_count + 1
+            print('value_count = ' + str(value_count))
+
+    if air_count == 2 and value_count == 6:
         return True
     else:
         return False
 
-def get_nextStep(direction, tempPos):
+
+def get_nextStep(direction, pos=None):
+    global nowPos
+    if pos == None:
+        pos = nowPos
+    tempPos = copy.deepcopy(pos)
     if "x+" in direction:
         tempPos["x"] = tempPos["x"] + 1
     if "x-" in direction:
@@ -99,33 +124,52 @@ def get_nextStep(direction, tempPos):
     return tempPos
 
 
-def get_direction(rotationType, startRoll="y+"):
+def get_direction(rotationType, startRoll="y-"):
     global directionRoll
     global rotationCount # will modify
     global fold
+    extraEnable = True
     rollIndex = directionRoll.index(startRoll)
     if rotationType == 1: # positive
-        for limit in range(8):
+        for limit in range(4):
             index = rollIndex % 8
             if check_nextStep(directionRoll[index]) == True:
+                if extraEnable == True:
+                    if check_extraEvent() == True:
+                        rollIndex = rollIndex + 1
+                        extraEnable = False
+                        continue
                 rotationCount = rotationCount + 1
-                if rotationCount == fold:
+                if rotationCount == fold + 1:
                     return directionRoll[ (index+1) % 8]
                 return directionRoll[index]
             else:
                 rollIndex = rollIndex + 1
-        return "Error"
+        return startRoll
     if rotationType == 2: # negative
-        for limit in range(8):
+        for limit in range(4):
             index = rollIndex % 8
             if check_nextStep(directionRoll[index]) == True:
+                if check_extraEvent() == True:
+                    rollIndex = rollIndex - 1
+                    continue
                 rotationCount = rotationCount + 1
-                if rotationCount == fold:
+                if rotationCount == fold + 1:
                     return directionRoll[ (index-1) % 8]
                 return directionRoll[index]
             else:
                 rollIndex = rollIndex - 1
-        return "Error"
+        return startRoll
+
+
+def check_end():
+    if check_nextStep("x+")==False and \
+    check_nextStep("x-")==False and \
+    check_nextStep("y+")==False and \
+    check_nextStep("y-")==False:
+        return True
+    else:
+        return False
 
 
 ###############################################################
@@ -136,20 +180,31 @@ def get_direction(rotationType, startRoll="y+"):
 
 if __name__ == "__main__":
     set_step(nowPos["x"], nowPos["y"])
-    direction = "y+"
+    direction = "y-"
 
     while True:
         direction = get_direction(rotationType, direction)
-        goToWall(direction)
-        if check_end() == True:
+        print('direction = ' + direction)
+        stepCount = goToWall(direction)
+        if stepCount == 0:
+            break
+        if check_end() == True and check_extraEvent() == False:
             break
 
-    for aList in array2D:
+    print('-------------- END --------------')
+    # change all element to STR for data type 00,01,02,03......
+    temp2D = list()
+    for row in array2D:
+        tempList = list()
+        for element in row:
+            if isinstance(element, int):
+                if element < 10:
+                    tempList.append("0" + str(element))
+                else:
+                    tempList.append(str(element))
+            if element == "N":
+                tempList.append("00")
+        temp2D.append(tempList)
+    
+    for aList in temp2D:
         print(aList)
-
-
-
-
-
-
-
