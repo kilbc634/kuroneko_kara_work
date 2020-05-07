@@ -7,7 +7,11 @@
 import copy
 
 
-########## Init ##########
+###############################################################
+#
+#    Init Zone
+#
+###############################################################
 
 xyLen = int(input("矩陣維度:"))
 rotationType = int(input("旋轉方向:"))
@@ -22,6 +26,15 @@ nowPos = {
 ROW = xyLen
 COL = xyLen
 directionRoll = ["y-", "y-x+", "x+", "x+y+", "y+", "y+x-", "x-", "x-y-"]
+#       (y-)
+#        │
+# (x-) ──┼┬┬┬───> (x+)
+#        ├┼┼┘
+#        ├┼┘
+#        ├┘
+#        │
+#        V
+#       (y+)
 rotationCount = 0
 array2D = [["N" for _ in range(ROW)] for _ in range(COL)]
 # array2D same as...
@@ -31,7 +44,6 @@ array2D = [["N" for _ in range(ROW)] for _ in range(COL)]
 #       [ "N" , "N" , "N" , "N" , "N" ],
 #       [ "N" , "N" , "N" , "N" , "N" ] ]
 
-########## Init ##########
 
 ###############################################################
 #
@@ -124,7 +136,7 @@ def get_nextStep(direction, pos=None):
     return tempPos
 
 
-def get_direction(rotationType, startRoll="y-"):
+def get_direction(rotationType, startRoll="y-", setBlock=False):
     global directionRoll
     global rotationCount # will modify
     global fold
@@ -163,13 +175,10 @@ def get_direction(rotationType, startRoll="y-"):
 
 
 def check_end():
-    if check_nextStep("x+")==False and \
-    check_nextStep("x-")==False and \
-    check_nextStep("y+")==False and \
-    check_nextStep("y-")==False:
-        return True
-    else:
-        return False
+    for direction in directionRoll:
+        if check_nextStep(direction) == True:
+            return False
+    return True
 
 
 ###############################################################
