@@ -190,14 +190,17 @@ def check_end():
 if __name__ == "__main__":
     set_step(nowPos["x"], nowPos["y"])
     direction = "y-"
+    rotationCount = 0
 
     while True:
-        direction = get_direction(rotationType, direction)
+        if rotationCount + 1 == rotationType:
+            direction = get_direction(rotationType, direction, setBlock=True)
+        else:
+            direction = get_direction(rotationType, direction)
         print('direction = ' + direction)
+        rotationCount = rotationCount + 1
         stepCount = goToWall(direction)
-        if stepCount == 0:
-            break
-        if check_end() == True and check_extraEvent() == False:
+        if check_end() == True or stepCount == 0:
             break
 
     print('-------------- END --------------')
@@ -211,7 +214,7 @@ if __name__ == "__main__":
                     tempList.append("0" + str(element))
                 else:
                     tempList.append(str(element))
-            if element == "N":
+            if element == "N" or element == "B":
                 tempList.append("00")
         temp2D.append(tempList)
     
