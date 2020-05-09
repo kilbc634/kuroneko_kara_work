@@ -59,7 +59,15 @@ def set_step(x, y):
     nowPos["y"] = y
     nowPos["count"] = nowPos["count"] + 1
     #write value
+    print(nowPos)
     array2D[ nowPos["y"]-1 ][ nowPos["x"]-1 ] = nowPos["count"]
+
+
+def set_block(x, y):
+    global nowPos
+    global array2D # will modify global variable
+    #write value
+    array2D[y - 1][x - 1] = "B"
 
 
 def check_nextStep(direction):
@@ -79,7 +87,7 @@ def check_nextStep(direction):
     return True
 
 
-def goToWall(direction):
+def goToWall(direction, setBlock=None):
     global nowPos
     stepCount = 0
     while True:
@@ -89,35 +97,9 @@ def goToWall(direction):
             pos = get_nextStep(direction, nowPos)
             set_step(pos["x"], pos["y"])
             stepCount = stepCount + 1
-
-
-def check_extraEvent():
-    global directionRoll
-    global array2D
-    global nowPos
-    air_count = 0
-    value_count = 0
-    print(nowPos)
-    for direction in directionRoll:
-        pos = get_nextStep(direction)
-        print(pos)
-        #check not in domain
-        if pos["x"] not in range(1, ROW+1):
-            return False
-        if pos["y"] not in range(1, COL+1):
-            return False
-        #check value count
-        if array2D[ pos["y"]-1 ][ pos["x"]-1 ] == "N":
-            air_count = air_count + 1
-            print('air_count = ' + str(air_count))
-        else:
-            value_count = value_count + 1
-            print('value_count = ' + str(value_count))
-
-    if air_count == 2 and value_count == 6:
-        return True
-    else:
-        return False
+            if setBlock:
+                pos = get_nextStep(setBlock, nowPos)
+                set_block(pos["x"], pos["y"])
 
 
 def get_nextStep(direction, pos=None):
@@ -136,37 +118,24 @@ def get_nextStep(direction, pos=None):
     return tempPos
 
 
-def get_direction(rotationType, startRoll="y-", setBlock=False):
+def get_direction(rotationType, startRoll="y-", extraMod=False):
     global directionRoll
-    global rotationCount # will modify
-    global fold
-    extraEnable = True
     rollIndex = directionRoll.index(startRoll)
     if rotationType == 1: # positive
-        for limit in range(4):
+        for limit in range(8):
             index = rollIndex % 8
             if check_nextStep(directionRoll[index]) == True:
-                if extraEnable == True:
-                    if check_extraEvent() == True:
-                        rollIndex = rollIndex + 1
-                        extraEnable = False
-                        continue
-                rotationCount = rotationCount + 1
-                if rotationCount == fold + 1:
+                if extraMod == True:
                     return directionRoll[ (index+1) % 8]
                 return directionRoll[index]
             else:
                 rollIndex = rollIndex + 1
         return startRoll
     if rotationType == 2: # negative
-        for limit in range(4):
+        for limit in range(8):
             index = rollIndex % 8
             if check_nextStep(directionRoll[index]) == True:
-                if check_extraEvent() == True:
-                    rollIndex = rollIndex - 1
-                    continue
-                rotationCount = rotationCount + 1
-                if rotationCount == fold + 1:
+                if extraMod == True:
                     return directionRoll[ (index-1) % 8]
                 return directionRoll[index]
             else:
@@ -193,13 +162,17 @@ if __name__ == "__main__":
     rotationCount = 0
 
     while True:
-        if rotationCount + 1 == rotationType:
-            direction = get_direction(rotationType, direction, setBlock=True)
+        if rotationCount == fold:
+            directionOrigin = copy.deepcopy(direction)
+            direction = get_direction(rotationType, direction, extraMod=True)
+            print('direction = ' + direction)
+            rotationCount = rotationCount + 1
+            stepCount = goToWall(direction, setBlock=directionOrigin)
         else:
             direction = get_direction(rotationType, direction)
-        print('direction = ' + direction)
-        rotationCount = rotationCount + 1
-        stepCount = goToWall(direction)
+            print('direction = ' + direction)
+            rotationCount = rotationCount + 1
+            stepCount = goToWall(direction)
         if check_end() == True or stepCount == 0:
             break
 
