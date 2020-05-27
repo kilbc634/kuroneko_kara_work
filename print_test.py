@@ -68,6 +68,7 @@ def set_block(x, y):
     global array2D # will modify global variable
     # yo man
     # test
+    # select me
     array2D[y - 1][x - 1] = "B"
 
 
