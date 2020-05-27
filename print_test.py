@@ -13,9 +13,9 @@ import copy
 #
 ###############################################################
 
-xyLen = int(input("矩陣維度:"))
-rotationType = int(input("旋轉方向:"))
-fold = int(input("內折處:"))
+xyLen = int(input("矩陣邊長(1 or more):"))
+rotationType = int(input("旋轉方向(1 is positive, 2 is negative):"))
+fold = int(input("內折處(1 or 2 or 3):"))
 
 nowPos = {
     "x": 1,
@@ -28,7 +28,7 @@ COL = xyLen
 directionRoll = ["y-", "y-x+", "x+", "x+y+", "y+", "y+x-", "x-", "x-y-"]
 #       (y-)
 #        │
-# (x-) ──┼┬┬┬───> (x+)
+# (x-) ──┼┬┬┬────> (x+)
 #        ├┼┼┘
 #        ├┼┘
 #        ├┘
@@ -66,7 +66,7 @@ def set_step(x, y):
 def set_block(x, y):
     global nowPos
     global array2D # will modify global variable
-    #write value
+    # hey man
     array2D[y - 1][x - 1] = "B"
 
 
